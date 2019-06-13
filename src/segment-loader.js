@@ -1195,20 +1195,13 @@ export default class SegmentLoader extends videojs.EventTarget {
       return;
     }
 
-    if (!mediaType) {
-      // If media type isn't set, that means it's not being parsed from the content. This
-      // can happen in the case of fmp4, since we don't parse the media type (yet). In
-      // this case, just use the loader type, since fmp4 should always be demuxed.
-      mediaType =
-        this.loaderType_ === 'main' && this.startingMedia_.hasVideo ? 'video' : 'audio';
-      timeType = mediaType;
-    }
-
     const segmentInfo = this.pendingSegment_;
     const timingInfoProperty = timingInfoPropertyForMedia(mediaType);
 
     segmentInfo[timingInfoProperty] = segmentInfo[timingInfoProperty] || {};
     segmentInfo[timingInfoProperty][timeType] = time;
+
+    this.logger_(`timinginfo: ${mediaType} - ${timeType} - ${time}`);
 
     // check if any calls were waiting on the timing info
     if (this.hasEnoughInfoToAppend_()) {

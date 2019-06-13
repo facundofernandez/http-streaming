@@ -358,6 +358,7 @@ const handleSegmentBytes = ({
     }
 
     // if an init segment has both audio and video is muxed
+    // set hasAudio to false and merge the audio codec info.
     if (tracks.video && tracks.audio) {
       trackInfo.hasAudio = false;
       if (trackInfo.audioCodec) {
@@ -380,6 +381,10 @@ const handleSegmentBytes = ({
     if (trackInfo.hasVideo) {
       timingInfoFn(segment, 'video', 'start', timingInfo);
     }
+
+    // if the track still has audio at this point it is only possible
+    // for it to be audio only. See `tracks.video && tracks.audio` if statement
+    // above.
     dataFn(segment, {data: bytes, type: trackInfo.hasAudio ? 'audio' : 'video'});
 
     // Run through the CaptionParser in case there are captions.
