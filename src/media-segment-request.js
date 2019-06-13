@@ -165,11 +165,6 @@ const handleInitSegmentResponse =
 
   segment.map.bytes = new Uint8Array(request.response);
 
-  // Initialize CaptionParser if it hasn't been yet
-  if (captionParser && !captionParser.isInitialized()) {
-    captionParser.init();
-  }
-
   const tracks = mp4probe.tracks(segment.map.bytes);
 
   tracks.forEach(function(track) {
@@ -203,8 +198,6 @@ const handleInitSegmentResponse =
  */
 const handleSegmentResponse = ({
   segment,
-  captionParser,
-  captionsFn,
   finishProcessingFn,
   responseType
 }) => (error, request) => {
@@ -234,23 +227,6 @@ const handleSegmentResponse = ({
     segment.encryptedBytes = new Uint8Array(newBytes);
   } else {
     segment.bytes = new Uint8Array(newBytes);
-  }
-
-  // This is likely an FMP4 and has the init segment.
-  // Run through the CaptionParser in case there are captions.
-  if (captionParser && segment.map && segment.map.track && segment.map.track.video) {
-    // Initialize CaptionParser if it hasn't been yet
-    if (!captionParser.isInitialized()) {
-      captionParser.init();
-    }
-    const parsed = captionParser.parse(
-      segment.bytes,
-      [segment.map.track.video.id],
-      segment.map.track.video.timescales);
-
-    if (parsed && parsed.captions && parsed.captions.length > 0) {
-      captionsFn(segment, parsed.captions);
-    }
   }
 
   return finishProcessingFn(null, segment);
@@ -800,8 +776,6 @@ export const mediaSegmentRequest = ({
 
   const segmentRequestCallback = handleSegmentResponse({
     segment,
-    captionParser,
-    captionsFn,
     finishProcessingFn,
     responseType: segmentRequestOptions.responseType
   });
